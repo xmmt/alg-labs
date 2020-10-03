@@ -1,13 +1,7 @@
 #pragma once
-#include <InsertionSort.hpp>
 #include <cassert>
 
-namespace QuickSort {
-
-namespace Private {
-// TODO: determine best size for insertion sort
-const size_t k_insertion_threshold = 15;
-} // namespace Private
+namespace InsertionSort {
 
 template <typename T>
 void sort(T* first, T* last) {
@@ -22,11 +16,7 @@ void sort(T* first, T* last, Compare comp) {
         // array of one element or wrong pointers - nothing to do, leave it
         return;
     }
-    if (static_cast<size_t>(last - first) < Private::k_insertion_threshold) {
-        InsertionSort::sort(first, last, comp);
-        return;
-    }
-    // TODO: quick sort
+    // TODO: insertion sort
 }
 
-} // namespace QuickSort
+} // namespace InsertionSort

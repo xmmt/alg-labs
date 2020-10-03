@@ -152,6 +152,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\InsertionSort.hpp" />
     <ClInclude Include="include\QuickSort.hpp" />
   </ItemGroup>
   <ItemGroup>
