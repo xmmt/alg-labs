@@ -4,7 +4,7 @@
 namespace QuickSort {
     namespace Private
     {
-        const size_t kInsertionThreshold = 15;
+        const size_t k_insertion_threshold = 15;
     } // namespace Private
 
     template<typename T>
@@ -22,7 +22,7 @@ namespace QuickSort {
         {
             return;
         }
-        if (last - first < Private::kInsertionThreshold)
+        if (static_cast<size_t>(last - first) < Private::k_insertion_threshold)
         {
             // TODO: insertion sort here
         }
