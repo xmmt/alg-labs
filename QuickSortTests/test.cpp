@@ -5,7 +5,7 @@ TEST(TestCaseName, TestName) {
     EXPECT_TRUE(true);
 }
 
-TEST(Assertion, LastFirst) {
+TEST(Assertion, LastPointerIsLessThanFirst) {
     int a[] = { 3, 2, 1 };
     ASSERT_DEBUG_DEATH(QuickSort::sort(a + 2, a + 1), "");
 }
