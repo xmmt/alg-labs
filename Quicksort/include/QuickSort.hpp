@@ -20,6 +20,7 @@ namespace QuickSort {
         // TODO: static check of Compare type
         if (last - first < 2)
         {
+            // array of one element or wrong pointers - nothing to do, leave it
             return;
         }
         if (static_cast<size_t>(last - first) < Private::k_insertion_threshold)
