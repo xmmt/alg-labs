@@ -7,12 +7,45 @@ namespace QuickSort {
 namespace Private {
 // TODO: determine best size for insertion sort
 const size_t k_insertion_threshold = 15;
-} // namespace Private
 
 template <typename T>
-void sort(T* first, T* last) {
-    sort(first, last, [](T const& a, T const& b) { return a < b; });
+struct default_comparator {
+    inline bool operator()(T const& a, T const& b) {
+        return a < b;
+    }
+};
+
+template <typename T, typename Compare>
+T* select_pivot(T* first, T* last, Compare comp) {
+    // TODO: choose better pivot
+    return first;
 }
+
+template <typename T, typename Compare>
+T* do_partition(T* first, T* last, T* pivot, Compare comp) {
+    assert(first <= pivot && pivot < last && "Wrong pointers: *pivot must be between *first and *last");
+    while (first < last) {
+        while (comp(*pivot, *first)) {
+            first += 1;
+        }
+        while (comp(*last, *pivot)) {
+            last -= 1;
+        }
+        if (first < last) {
+            T temp = *first;
+            *first = *last;
+            *last = temp;
+        }
+    }
+    return last;
+}
+
+template <typename T>
+T* do_partition(T* first, T* last, T* pivot) {
+    return do_partition(first, last, pivot, default_comparator<T>());
+}
+
+} // namespace Private
 
 template <typename T, typename Compare>
 void sort(T* first, T* last, Compare comp) {
@@ -26,7 +59,13 @@ void sort(T* first, T* last, Compare comp) {
         InsertionSort::sort(first, last, comp);
         return;
     }
-    // TODO: quick sort
+    T* pivot = Private::select_pivot(first, last, comp);
+    pivot = Private::do_partition(first, last, pivot, comp);
+}
+
+template <typename T>
+void sort(T* first, T* last) {
+    sort(first, last, Private::default_comparator<T>());
 }
 
 } // namespace QuickSort
