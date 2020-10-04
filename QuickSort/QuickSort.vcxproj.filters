@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\QuickSort.hpp">
+    <ClInclude Include="include\insertion_sort.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\InsertionSort.hpp">
+    <ClInclude Include="include\quick_sort.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Source.cpp">
+    <ClCompile Include="source\source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

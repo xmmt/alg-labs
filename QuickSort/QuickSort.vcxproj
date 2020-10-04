@@ -152,11 +152,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\InsertionSort.hpp" />
-    <ClInclude Include="include\QuickSort.hpp" />
+    <ClInclude Include="include\insertion_sort.hpp" />
+    <ClInclude Include="include\quick_sort.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Source.cpp" />
+    <ClCompile Include="source\source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

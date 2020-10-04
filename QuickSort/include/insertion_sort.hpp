@@ -1,7 +1,7 @@
 #pragma once
 #include <cassert>
 
-namespace InsertionSort {
+namespace insertion_sort {
 
 template <typename T>
 void sort(T* first, T* last) {
@@ -19,4 +19,4 @@ void sort(T* first, T* last, Compare comp) {
     // TODO: insertion sort
 }
 
-} // namespace InsertionSort
+} // namespace insertion_sort

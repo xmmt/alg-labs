@@ -1,10 +1,10 @@
 #pragma once
-#include <InsertionSort.hpp>
+#include <insertion_sort.hpp>
 #include <cassert>
 
-namespace QuickSort {
+namespace quick_sort {
 
-namespace Private {
+namespace impl {
 // TODO: determine best size for insertion sort
 const size_t k_insertion_threshold = 15;
 
@@ -45,7 +45,7 @@ T* do_partition(T* first, T* last, T* pivot) {
     return do_partition(first, last, pivot, default_comparator<T>());
 }
 
-} // namespace Private
+} // namespace impl
 
 template <typename T, typename Compare>
 void sort(T* first, T* last, Compare comp) {
@@ -55,17 +55,17 @@ void sort(T* first, T* last, Compare comp) {
         // array of one element or wrong pointers - nothing to do, leave it
         return;
     }
-    if (static_cast<size_t>(last - first) < Private::k_insertion_threshold) {
-        InsertionSort::sort(first, last, comp);
+    if (static_cast<size_t>(last - first) < impl::k_insertion_threshold) {
+        insertion_sort::sort(first, last, comp);
         return;
     }
-    T* pivot = Private::select_pivot(first, last, comp);
-    pivot = Private::do_partition(first, last, pivot, comp);
+    T* pivot = impl::select_pivot(first, last, comp);
+    pivot = impl::do_partition(first, last, pivot, comp);
 }
 
 template <typename T>
 void sort(T* first, T* last) {
-    sort(first, last, Private::default_comparator<T>());
+    sort(first, last, impl::default_comparator<T>());
 }
 
-} // namespace QuickSort
+} // namespace quick_sort

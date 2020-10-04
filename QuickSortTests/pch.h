@@ -6,4 +6,4 @@
 #pragma once
 
 #include "gtest/gtest.h"
-#include <QuickSort.hpp>
+#include <quick_sort.hpp>
