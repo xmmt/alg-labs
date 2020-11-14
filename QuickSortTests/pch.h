@@ -5,6 +5,11 @@
 
 #pragma once
 
-#include "gtest/gtest.h"
+#include "helpers.h"
+
 #include <quick_sort.hpp>
 #include <insertion_sort.hpp>
+
+#include "gtest/gtest.h"
+
+#include <string>
