@@ -1,12 +1,12 @@
 #pragma once
 #include <insertion_sort.hpp>
-#include <cassert>
 
 namespace quick_sort {
 
 namespace impl {
+
 // TODO: determine best size for insertion sort
-const size_t k_insertion_threshold = 15;
+constexpr size_t k_insertion_threshold = 15;
 
 template <typename T>
 struct default_comparator {
@@ -23,18 +23,18 @@ T* select_pivot(T* first, T* last, Compare comp) {
 
 template <typename T, typename Compare>
 T* do_partition(T* first, T* last, T* pivot, Compare comp) {
-    assert(first <= pivot && pivot < last && "Wrong pointers: *pivot must be between *first and *last");
-    while (first < last) {
+    using std::advance;
+    using std::distance;
+    assert(distance(first, pivot) >= 0 && distance(pivot, last) > 0 && "Wrong pointers: *pivot must be between *first and *last");
+    while (distance(first, last) > 0) {
         while (comp(*pivot, *first)) {
-            first += 1;
+            advance(first, 1);
         }
         while (comp(*last, *pivot)) {
-            last -= 1;
+            advance(last, -1);
         }
-        if (first < last) {
-            T temp = *first;
-            *first = *last;
-            *last = temp;
+        if (distance(first, last) > 0) {
+            std::swap(*first, *last);
         }
     }
     return last;
@@ -49,13 +49,14 @@ T* do_partition(T* first, T* last, T* pivot) {
 
 template <typename T, typename Compare>
 void sort(T* first, T* last, Compare comp) {
-    assert(last >= first && "wrong pointers: *last less than *first");
+    using std::distance;
+    assert(distance(first, last) >= 0 && "wrong pointers: *last less than *first");
     // TODO: static check of Compare type
-    if (last - first < 2) {
+    if (distance(first, last) < 2) {
         // array of one element or wrong pointers - nothing to do, leave it
         return;
     }
-    if (static_cast<size_t>(last - first) < impl::k_insertion_threshold) {
+    if (static_cast<size_t>(distance(first, last)) < impl::k_insertion_threshold) {
         insertion_sort::sort(first, last, comp);
         return;
     }

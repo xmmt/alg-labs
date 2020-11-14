@@ -7,3 +7,4 @@
 
 #include "gtest/gtest.h"
 #include <quick_sort.hpp>
+#include <insertion_sort.hpp>
