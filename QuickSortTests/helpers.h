@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdarg>
 
 namespace helpers {
 
@@ -24,7 +25,13 @@ struct TriviallyCopyableStruct {
         : x(n) {
     }
 
-    auto operator<=>(Self const&) const = default;
+    //auto operator<=>(Self const&) const = default;
+    bool operator<(Self const& other) const {
+        return x < other.x;
+    }
+    bool operator>(Self const& other) const {
+        return x > other.x;
+    }
 
 #undef Self
 
@@ -53,7 +60,13 @@ struct NonTriviallyCopyableStruct {
         : x(n) {
     }
 
-    auto operator<=>(Self const&) const = default;
+    //auto operator<=>(Self const&) const = default;
+    bool operator<(Self const& other) const {
+        return x < other.x;
+    }
+    bool operator>(Self const& other) const {
+        return x > other.x;
+    }
 
 #undef Self
 
@@ -62,23 +75,23 @@ struct NonTriviallyCopyableStruct {
     }
 };
 
-template <typename T, typename = void>
-struct dataGetter {
-    inline static auto get(T const* pointer) {
+template <typename T>
+constexpr bool has_getData(T* pt, decltype(pt->getData())* = nullptr) {
+    return true;
+}
+
+template <typename T>
+constexpr bool has_getData(...) {
+    return false;
+}
+
+template <typename T>
+constexpr auto getData(T const* pointer) {
+    if constexpr (has_getData<T>(nullptr)) {
+        return pointer->getData();
+    } else {
         return *pointer;
     }
-};
-
-template <typename T>
-struct dataGetter<T, std::void_t<decltype(std::declval<T const>().getData())>> {
-    inline static auto get(T const* pointer) {
-        return pointer->getData();
-    }
-};
-
-template <typename T>
-inline auto getData(T const* pointer) {
-    return dataGetter<T>::get(pointer);
 }
 
 template <typename T>
