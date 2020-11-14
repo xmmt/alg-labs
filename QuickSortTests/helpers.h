@@ -25,13 +25,7 @@ struct TriviallyCopyableStruct {
         : x(n) {
     }
 
-    //auto operator<=>(Self const&) const = default;
-    bool operator<(Self const& other) const {
-        return x < other.x;
-    }
-    bool operator>(Self const& other) const {
-        return x > other.x;
-    }
+    auto operator<=>(Self const&) const = default;
 
 #undef Self
 
@@ -60,13 +54,7 @@ struct NonTriviallyCopyableStruct {
         : x(n) {
     }
 
-    //auto operator<=>(Self const&) const = default;
-    bool operator<(Self const& other) const {
-        return x < other.x;
-    }
-    bool operator>(Self const& other) const {
-        return x > other.x;
-    }
+    auto operator<=>(Self const&) const = default;
 
 #undef Self
 
