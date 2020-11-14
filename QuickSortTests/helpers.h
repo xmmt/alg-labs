@@ -64,21 +64,21 @@ struct NonTriviallyCopyableStruct {
 
 template <typename T, typename = void>
 struct dataGetter {
-    constexpr T operator()(T const* pointer) {
+    inline static auto get(T const* pointer) {
         return *pointer;
     }
 };
 
 template <typename T>
-struct dataGetter<T, std::void_t<decltype(std::declval<T>().getData())>> {
-    constexpr decltype(std::declval<T>().getData()) operator()(T const* pointer) {
+struct dataGetter<T, std::void_t<decltype(std::declval<T const>().getData())>> {
+    inline static auto get(T const* pointer) {
         return pointer->getData();
     }
 };
 
 template <typename T>
-constexpr auto getData(T const* pointer) -> decltype(std::declval<dataGetter<T>>()(pointer)) {
-    return dataGetter<T>()(pointer);
+inline auto getData(T const* pointer) {
+    return dataGetter<T>::get(pointer);
 }
 
 template <typename T>
