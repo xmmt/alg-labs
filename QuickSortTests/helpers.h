@@ -2,15 +2,16 @@
 
 #include <string>
 #include <cstdarg>
+#include <random>
 
 namespace helpers {
 
 template <typename T>
-struct TriviallyCopyableStruct {
+struct trivially_copyable_struct {
 #if Self
 #    error "Ooops"
 #endif
-#define Self TriviallyCopyableStruct
+#define Self trivially_copyable_struct
 
     T x{};
 
@@ -29,17 +30,17 @@ struct TriviallyCopyableStruct {
 
 #undef Self
 
-    T getData() const {
+    [[nodiscard]] T data() const {
         return x;
     }
 };
 
 template <typename T>
-struct NonTriviallyCopyableStruct {
+struct non_trivially_copyable_struct {
 #if Self
 #    error "Ooops"
 #endif
-#define Self NonTriviallyCopyableStruct
+#define Self non_trivially_copyable_struct
 
     T x{};
 
@@ -58,43 +59,75 @@ struct NonTriviallyCopyableStruct {
 
 #undef Self
 
-    T getData() const {
+    [[nodiscard]] T data() const {
         return x;
     }
 };
 
 template <typename T>
-constexpr bool has_getData(T* pt, decltype(pt->getData())* = nullptr) {
-    return true;
-}
+concept has_data_getter = requires(T a) {
+    a->data();
+};
 
 template <typename T>
-constexpr bool has_getData(...) {
-    return false;
-}
-
-template <typename T>
-constexpr auto getData(T const* pointer) {
-    if constexpr (has_getData<T>(nullptr)) {
-        return pointer->getData();
+auto get_data(T const pointer) {
+    if constexpr (has_data_getter<T>) {
+        return pointer->data();
     } else {
         return *pointer;
     }
 }
 
 template <typename T>
-std::string serializeArray(T* first, T* last) {
+std::string serialize_array(T first, T last) {
     if (std::distance(first, last) <= 0) {
         return "[]";
     }
     std::string result;
     result += "[";
     while (std::next(first, 1) != last) {
-        result += std::to_string(getData(first)) + ", ";
+        result += std::to_string(get_data(first)) + ", ";
         std::advance(first, 1);
     }
-    result += std::to_string(getData(first)) + "]";
+    result += std::to_string(get_data(first)) + "]";
     return result;
 };
 
 } // namespace helpers
+
+template <typename T, typename Compare>
+bool is_sorted(T* first, T* last, Compare comp) {
+    auto next = std::next(first);
+    while (next != last) {
+        if (caom(*next, *first)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool is_sorted(T* first, T* last) {
+    return is_sorted(first, last, std::less());
+}
+
+template <class RandomIt, class URBG>
+void shuffle(RandomIt first, RandomIt last, URBG&& g) {
+    typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
+    typedef std::uniform_int_distribution<diff_t> distr_t;
+    typedef typename distr_t::param_type param_t;
+
+    distr_t D;
+    diff_t n = last - first;
+    for (diff_t i = n - 1; i > 0; --i) {
+        using std::swap;
+        swap(first[i], first[D(g, param_t(0, i))]);
+    }
+}
+
+template <class RandomIt>
+void random_shuffle(RandomIt first, RandomIt last) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(first, last, g);
+}

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define TESTING
+
 #include "helpers.h"
 
 #include <quick_sort.hpp>
@@ -13,3 +15,8 @@
 #include "gtest/gtest.h"
 
 #include <string>
+#include <vector>
+#include <list>
+#include <forward_list>
+#include <array>
+#include <algorithm>
