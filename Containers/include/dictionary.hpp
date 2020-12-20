@@ -186,7 +186,7 @@ public:
         }
         void delete_case_3() {
             auto s = sibling();
-            if (parent->color == color::black && s->color == color::black && s->left->color == color::black && s->right->color == color::black) {
+            if (parent->color == color::black && s->color == color::black && (!s->left || s->left->color == color::black) && (!s->right || s->right->color == color::black)) {
                 s->color = color::red;
                 parent->delete_case_1();
             } else {
@@ -195,7 +195,7 @@ public:
         }
         void delete_case_4() {
             auto s = sibling();
-            if (parent->color == color::red && s->color == color::black && s->left->color == color::black && s->right->color == color::black) {
+            if (parent->color == color::red && s->color == color::black && (!s->left || s->left->color == color::black) && (!s->right || s->right->color == color::black)) {
                 s->color = color::red;
                 parent->color = color::black;
             } else {
@@ -206,11 +206,11 @@ public:
             auto s = sibling();
 
             if (s->color == color::black) {
-                if (this == parent->left.get() && s->right->color == color::black && s->left->color == color::red) {
+                if (this == parent->left.get() && (!s->right || s->right->color == color::black) && (s->left && s->left->color == color::red)) {
                     s->color = color::red;
                     s->left->color = color::black;
                     s->rotate_right();
-                } else if (this == parent->right.get() && s->left->color == color::black && s->right->color == color::red) {
+                } else if (this == parent->right.get() && (!s->left || s->left->color == color::black) && (s->right && s->right->color == color::red)) {
                     s->color = color::red;
                     s->right->color = color::black;
                     s->rotate_left();
@@ -225,10 +225,14 @@ public:
             parent->color = color::black;
 
             if (this == parent->left.get()) {
-                s->right->color = color::black;
+                if (s->right) {
+                    s->right->color = color::black;
+                }
                 parent->rotate_left();
             } else {
-                s->left->color = color::black;
+                if (s->left) {
+                    s->left->color = color::black;
+                }
                 parent->rotate_right();
             }
         }
@@ -297,6 +301,9 @@ public:
 
     void put(KeyType const& key, ValueType const& value) {
         if (!root) {
+            //auto* p = reinterpret_cast<rbnode*>(allocator_.allocate(1));
+            //new (p) rbnode{ key, value };
+            //root.reset(p);
             root.reset(new rbnode{ key, value });
             root->insert_case_1();
         } else {
@@ -305,6 +312,8 @@ public:
             if (s->hash_ == h && s->key == key) {
                 s->value = value;
             } else {
+                //auto* new_node = reinterpret_cast<rbnode*>(allocator_.allocate(1));
+                //new (new_node) rbnode{ key, value, rbnode::color::red, s };
                 auto new_node = new rbnode{ key, value, rbnode::color::red, s };
                 if (h < s->hash_) {
                     s->left.reset(new_node);
@@ -318,6 +327,61 @@ public:
     }
 
     void remove(KeyType const& key) {
+        auto h = hash(key);
+        auto s = root->lookup(key);
+        if (s->hash_ != h || s->key != key) {
+            return;
+        }
+        if (s->left && s->right) {
+            auto t = s->right->lookup(key);
+            s->key = std::move(t->key);
+            s->value = std::move(t->value);
+            s = t;
+        }
+        if (s->color == rbnode::color::red) {
+            if (s->parent) {
+                if (s->parent->left.get() == s) {
+                    s->parent->left.reset(nullptr);
+                } else {
+                    s->parent->right.reset(nullptr);
+                }
+            } else {
+                root.reset(nullptr);
+            }
+        } else {
+            auto c = s->left ? s->left.get() : s->right.get();
+            if (c && c->color == rbnode::color::red) {
+                c->color = rbnode::color::black;
+                if (c == s->left.get()) {
+                    s->left.release();
+                } else if (c == s->right.get()) {
+                    s->right.release();
+                }
+                if (s->parent) {
+                    c->parent = s->parent;
+                    if (s->parent->left.get() == s) {
+                        s->parent->left.reset(c);
+                    } else {
+                        s->parent->right.reset(c);
+                    }
+                } else {
+                    root.reset(c);
+                    c->parent = nullptr;
+                }
+            } else {
+                s->delete_case_1();
+                if (s->parent) {
+                    if (s->parent->left.get() == s) {
+                        s->parent->left.reset(nullptr);
+                    } else {
+                        s->parent->right.reset(nullptr);
+                    }
+                } else {
+                    root.reset(nullptr);
+                }
+            }
+        }
+        update_root();
     }
 
     bool contains(KeyType const& key) {
@@ -347,7 +411,7 @@ public:
 
 public:
     void update_root() {
-        if (root->parent) {
+        if (root && root->parent) {
             auto p = root->parent;
             while (p->parent) {
                 p = p->parent;
@@ -359,6 +423,8 @@ public:
 
 public:
     std::unique_ptr<rbnode> root{ nullptr };
+    //typename std::map<int, std::aligned_storage_t<sizeof(rbnode) - 4, alignof(rbnode)>>::allocator_type allocator_;
+    //typename std::vector<std::aligned_storage_t<sizeof(rbnode), alignof(rbnode)>>::allocator_type allocator_;
 };
 
 } // namespace containers

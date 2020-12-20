@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <string>
 
 struct x {
     int d{ 0 };
@@ -116,7 +117,9 @@ struct hash<x> {
     std::size_t operator()(x const& s) const noexcept {
         const auto h1 = std::hash<int>{}(s.d);
         const auto h2 = std::hash<double>{}(s.f);
-        return h1 ^ (h2 << 1);
+        //return h1 ^ (h2 << 1);
+        //return h1;
+        return s.d;
     }
 };
 } // namespace std
@@ -127,7 +130,9 @@ struct hash<y> {
     std::size_t operator()(y const& s) const noexcept {
         const auto h1 = std::hash<int>{}(s.d);
         const auto h2 = std::hash<double>{}(s.f);
-        return h1 ^ (h2 << 1);
+        //return h1 ^ (h2 << 1);
+        //return h1;
+        return s.d;
     }
 };
 } // namespace std
@@ -266,13 +271,31 @@ int main() {
     }
     std::cout << std::endl;
     {
-        const int N = 10'000'000;
+        const int N = 10;
+        containers::Dictionary<y, int> d;
+        for (auto i = 0; i < N; ++i) {
+            d.put({ i, static_cast<double>(i) }, i);
+        }
+        for (auto i = 0; i < N; ++i) {
+            d.remove({ i, static_cast<double>(i) });
+        }
+    }
+    std::cout << std::endl;
+    {
+        const int N = 100'000;
         containers::Dictionary<y, int> d;
         auto start = std::chrono::steady_clock::now();
         for (auto i = 0; i < N; ++i) {
             d.put({ i, static_cast<double>(i) }, i);
         }
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
+
+        start = std::chrono::steady_clock::now();
+        for (auto i = 0; i < N; i += 2) {
+            d.remove({ i, static_cast<double>(i) });
+        }
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
+
         std::map<y, int> mp;
         start = std::chrono::steady_clock::now();
         for (auto i = 0; i < N; ++i) {
@@ -296,10 +319,59 @@ int main() {
         };
         int dd = traverse(r);
         for (int i = 0; i < N; ++i) {
-            if (v[i] != 1) {
+            if (i % 2 != 0 && v[i] != 1) {
+                int b = 3;
+            } else if (i % 2 == 0 && v[i] != 0)
+            {
                 int b = 3;
             }
         }
+        int a = 3;
+    }
+    std::cout << std::endl;
+    {
+        const int N = 100'000;
+        containers::Dictionary<std::string, std::string> d;
+        auto start = std::chrono::steady_clock::now();
+        for (auto i = 0; i < N; ++i) {
+            auto s1 = std::to_string(i);
+            auto s2 = s1 + s1 + s1;
+            auto s3 = s2 + s2 + s2;
+            auto s4 = s3 + s3 + s3;
+            d.put(s4, s4);
+        }
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
+        std::map<std::string, std::string> mp;
+        start = std::chrono::steady_clock::now();
+        for (auto i = 0; i < N; ++i) {
+            auto s1 = std::to_string(i);
+            auto s2 = s1 + s1 + s1;
+            auto s3 = s2 + s2 + s2;
+            auto s4 = s3 + s3 + s3;
+            mp[s4] = s4;
+            //d.put({ i, static_cast<double>(i) }, i);
+        }
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << std::endl;
+        //std::vector<int> v(N, 0);
+        auto* r = d.root.get();
+        auto traverse = [](auto ptr) {
+            auto tr_impl = [](auto ptr, int depth, auto& tr_ref) -> int {
+                if (ptr) {
+                    //++v[ptr->key.d];
+                    int a = tr_ref(ptr->left.get(), depth + 1, tr_ref);
+                    int b = tr_ref(ptr->right.get(), depth + 1, tr_ref);
+                    return a > b ? a : b;
+                }
+                return depth;
+            };
+            return tr_impl(ptr, 1, tr_impl);
+        };
+        int dd = traverse(r);
+        //for (int i = 0; i < N; ++i) {
+        //    if (v[i] != 1) {
+        //        int b = 3;
+        //    }
+        //}
         int a = 3;
     }
     return 0;
