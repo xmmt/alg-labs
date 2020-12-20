@@ -3,24 +3,21 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="source\test.cpp">
-      <Filter>source</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="helpers.hpp">
-      <Filter>include</Filter>
+    <ClInclude Include="include\helpers.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="include">
-      <UniqueIdentifier>{004816fe-32d3-4369-8613-ea7616710f2c}</UniqueIdentifier>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{ff334e25-64a6-4af9-b05c-3221303d0eda}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source">
-      <UniqueIdentifier>{25e09711-9ceb-41cf-b4bf-94bf56388398}</UniqueIdentifier>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{bdc5ca60-1090-4010-bae3-8d80095949ff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

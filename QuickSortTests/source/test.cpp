@@ -22,27 +22,27 @@ TEST(Assertion, DISABLED_WrongPivot) {
 TEST(Quick_Sort, SelectPivot) {
     {
         int a[] = { 1, 2, 3 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a + 1);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a + 1);
     }
     {
         int a[] = { 1, 3, 2 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a + 2);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a + 2);
     }
     {
         int a[] = { 2, 1, 3 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a);
     }
     {
         int a[] = { 2, 3, 1 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a);
     }
     {
         int a[] = { 3, 1, 2 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a + 2);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a + 2);
     }
     {
         int a[] = { 3, 2, 1 };
-        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less()), a + 1);
+        ASSERT_EQ(quick_sort::impl::select_pivot(a, a + 3, std::less{}), a + 1);
     }
 }
 

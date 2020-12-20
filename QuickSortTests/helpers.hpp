@@ -8,27 +8,20 @@ namespace helpers {
 
 template <typename T>
 struct trivially_copyable_struct {
-#if Self
-#    error "Ooops"
-#endif
-#define Self trivially_copyable_struct
-
     T x{};
 
-    Self() = default;
-    Self(const Self&) = default;
-    Self(Self&&) = default;
-    Self& operator=(const Self&) = default;
-    Self& operator=(Self&&) = default;
-    ~Self() = default; // virtual destructor disables is_trivially_copyable trait
+    trivially_copyable_struct() = default;
+    trivially_copyable_struct(trivially_copyable_struct const&) = default;
+    trivially_copyable_struct(trivially_copyable_struct&&) = default;
+    trivially_copyable_struct& operator=(trivially_copyable_struct const&) = default;
+    trivially_copyable_struct& operator=(trivially_copyable_struct&&) = delete;
+    ~trivially_copyable_struct() = default; // virtual destructor disables is_trivially_copyable trait
 
-    Self(T const& n)
+    trivially_copyable_struct(T const& n)
         : x(n) {
     }
 
-    auto operator<=>(Self const&) const = default;
-
-#undef Self
+    auto operator<=>(trivially_copyable_struct const&) const = default;
 
     [[nodiscard]] T data() const {
         return x;
@@ -37,27 +30,20 @@ struct trivially_copyable_struct {
 
 template <typename T>
 struct non_trivially_copyable_struct {
-#if Self
-#    error "Ooops"
-#endif
-#define Self non_trivially_copyable_struct
-
     T x{};
 
-    Self() = default;
-    Self(const Self&) = default;
-    Self(Self&&) = default;
-    Self& operator=(const Self&) = default;
-    Self& operator=(Self&&) = default;
-    virtual ~Self() = default; // virtual destructor disables is_trivially_copyable trait
+    non_trivially_copyable_struct() = default;
+    non_trivially_copyable_struct(non_trivially_copyable_struct const&) = default;
+    non_trivially_copyable_struct(non_trivially_copyable_struct&&) = default;
+    non_trivially_copyable_struct& operator=(non_trivially_copyable_struct const&) = default;
+    non_trivially_copyable_struct& operator=(non_trivially_copyable_struct&&) = default;
+    virtual ~non_trivially_copyable_struct() = default; // virtual destructor disables is_trivially_copyable trait
 
-    Self(T const& n)
+    non_trivially_copyable_struct(T const& n)
         : x(n) {
     }
 
-    auto operator<=>(Self const&) const = default;
-
-#undef Self
+    auto operator<=>(non_trivially_copyable_struct const&) const = default;
 
     [[nodiscard]] T data() const {
         return x;
@@ -109,20 +95,6 @@ bool is_sorted(T* first, T* last, Compare comp) {
 template <typename T>
 bool is_sorted(T* first, T* last) {
     return is_sorted(first, last, std::less());
-}
-
-template <class RandomIt, class URBG>
-void shuffle(RandomIt first, RandomIt last, URBG&& g) {
-    typedef typename std::iterator_traits<RandomIt>::difference_type diff_t;
-    typedef std::uniform_int_distribution<diff_t> distr_t;
-    typedef typename distr_t::param_type param_t;
-
-    distr_t D;
-    diff_t n = last - first;
-    for (diff_t i = n - 1; i > 0; --i) {
-        using std::swap;
-        swap(first[i], first[D(g, param_t(0, i))]);
-    }
 }
 
 template <class RandomIt>

@@ -7,7 +7,7 @@
 
 #define TESTING
 
-#include "helpers.h"
+#include "helpers.hpp"
 
 #include <quick_sort.hpp>
 #include <insertion_sort.hpp>
