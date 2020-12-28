@@ -12,7 +12,7 @@ public:
 public:
     class rbnode;
     using rbnode_ptr_t = rbnode*;
-    class rbnode {
+    class rbnode final {
     public:
         enum class color : uint8_t {
             black,
@@ -143,29 +143,29 @@ public:
                 g->rotate_left();
             }
         }
-        void replace_node(rbnode_ptr_t child) {
-            child->parent = parent;
-            if (this == parent->left.get()) {
-                parent->left.release();
-                parent->left.reset(child);
-            } else {
-                parent->right.release();
-                parent->right.reset(child);
-            }
-        }
-
-        void delete_one_child() {
-            auto child = right->is_leaf() ? left.get() : right.get();
-            replace_node(child);
-            if (color == color::black) {
-                if (child->color == color::red)
-                    child->color = color::black;
-                else {
-                    child->delete_case_1();
-                }
-            }
-            delete this;
-        }
+        //void replace_node(rbnode_ptr_t child) {
+        //    child->parent = parent;
+        //    if (this == parent->left.get()) {
+        //        parent->left.release();
+        //        parent->left.reset(child);
+        //    } else {
+        //        parent->right.release();
+        //        parent->right.reset(child);
+        //    }
+        //}
+        //
+        //void delete_one_child() {
+        //    auto child = right->is_leaf() ? left.get() : right.get();
+        //    replace_node(child);
+        //    if (color == color::black) {
+        //        if (child->color == color::red)
+        //            child->color = color::black;
+        //        else {
+        //            child->delete_case_1();
+        //        }
+        //    }
+        //    delete this;
+        //}
         void delete_case_1() {
             if (parent) {
                 delete_case_2();
@@ -264,7 +264,16 @@ public:
 
 public:
     template <typename IterValueType>
-    class Iterator {
+    class Iterator final {
+    public:
+        Iterator(rbnode_ptr_t node)
+            : node_{ node } {
+        }
+        Iterator(Iterator const&) = default;
+        Iterator(Iterator&&) = default;
+        Iterator& operator=(Iterator const&) = default;
+        Iterator& operator=(Iterator&&) = default;
+        ~Iterator() = default;
         KeyType const& key() const {
             static KeyType key{};
             return key;
@@ -274,17 +283,51 @@ public:
             return value;
         }
         void set(ValueType const& value) {
+            node_->value = value;
         }
         void next() {
+            auto s = node_;
+            while (!s->right && s->parent) {
+                s = s->parent;
+            }
+            if (s->right) {
+                node_ = s->right.get();
+            }
         }
         void prev() {
+            auto s = node_;
+            while (!s->left && s->parent) {
+                s = s->parent;
+            }
+            if (s->left) {
+                node_ = s->left.get();
+            }
         }
-        bool hasNext() {
-            return true;
+
+        [[nodiscard]] bool hasNext() const {
+            auto s = node_;
+            while (!s->right && s->parent) {
+                s = s->parent;
+            }
+            if (s->right) {
+                return true;
+            }
+            return false;
         }
-        bool hasPrev() {
-            return true;
+
+        [[nodiscard]] bool hasPrev() const {
+            auto s = node_;
+            while (!s->left && s->parent) {
+                s = s->parent;
+            }
+            if (s->left) {
+                return true;
+            }
+            return false;
         }
+
+    private:
+        rbnode_ptr_t node_{ nullptr };
     };
 
 public:
@@ -306,9 +349,10 @@ public:
             //root.reset(p);
             root.reset(new rbnode{ key, value });
             root->insert_case_1();
+            ++size_;
         } else {
             auto h = hash(key);
-            auto s = root->lookup(key);
+            auto s = root->lookup(key, h);
             if (s->hash_ == h && s->key == key) {
                 s->value = value;
             } else {
@@ -321,19 +365,23 @@ public:
                     s->right.reset(new_node);
                 }
                 new_node->insert_case_1();
+                ++size_;
             }
         }
         update_root();
     }
 
     void remove(KeyType const& key) {
+        if (!root) {
+            return;
+        }
         auto h = hash(key);
-        auto s = root->lookup(key);
+        auto s = root->lookup(key, h);
         if (s->hash_ != h || s->key != key) {
             return;
         }
         if (s->left && s->right) {
-            auto t = s->right->lookup(key);
+            auto t = s->right->lookup(key, h);
             s->key = std::move(t->key);
             s->value = std::move(t->value);
             s = t;
@@ -382,24 +430,51 @@ public:
             }
         }
         update_root();
+        --size_;
     }
 
     bool contains(KeyType const& key) {
-        return true;
+        if (!root) {
+            return false;
+        }
+        auto h = hash(key);
+        auto s = root->lookup(key, h);
+        if (h == s->hash_ && key == s->key) {
+            return true;
+        }
+        return false;
     }
 
-    ValueType const& operator[](KeyType const& key) const {
+    ValueType const&
+    operator[](KeyType const& key) const {
         static ValueType value{};
+        if (root) {
+            auto h = hash(key);
+            auto s = root->lookup(key, h);
+            if (h == s->hash_ && key == s->key) {
+                return s->value;
+            }
+        }
         return value;
     }
 
     ValueType& operator[](KeyType const& key) {
-        static ValueType value{};
-        return value;
+        if (!root) {
+            put(key, {});
+            return *root;
+        }
+        auto h = hash(key);
+        auto s = root->lookup(key, h);
+        if (h == s->hash_ && key == s->key) {
+            return s->value;
+        }
+        put(key, {});
+        s = root->lookup(key, h);
+        return s->value;
     }
 
     size_type size() const {
-        return 0;
+        return size_;
     }
 
     iterator getIterator() const {
@@ -423,6 +498,7 @@ public:
 
 public:
     std::unique_ptr<rbnode> root{ nullptr };
+    size_type size_{ 0 };
     //typename std::map<int, std::aligned_storage_t<sizeof(rbnode) - 4, alignof(rbnode)>>::allocator_type allocator_;
     //typename std::vector<std::aligned_storage_t<sizeof(rbnode), alignof(rbnode)>>::allocator_type allocator_;
 };

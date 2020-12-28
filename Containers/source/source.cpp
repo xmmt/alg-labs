@@ -6,6 +6,7 @@
 #include <map>
 #include <chrono>
 #include <string>
+#include <thread>
 
 struct x {
     int d{ 0 };
@@ -271,7 +272,7 @@ int main() {
     }
     std::cout << std::endl;
     {
-        const int N = 10;
+        const int N = 100000;
         containers::Dictionary<y, int> d;
         for (auto i = 0; i < N; ++i) {
             d.put({ i, static_cast<double>(i) }, i);
@@ -280,6 +281,7 @@ int main() {
             d.remove({ i, static_cast<double>(i) });
         }
     }
+    std::this_thread::sleep_for(std::chrono::seconds(4));
     std::cout << std::endl;
     {
         const int N = 100'000;
@@ -374,5 +376,7 @@ int main() {
         //}
         int a = 3;
     }
+    //std::this_thread::sleep_for(std::chrono::seconds(4));
+    
     return 0;
 }
