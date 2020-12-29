@@ -151,6 +151,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\allocator_interface.hpp" />
+    <ClInclude Include="include\coalesce_allocator.hpp" />
+    <ClInclude Include="include\fixed_size_allocator.hpp" />
     <ClInclude Include="include\memory_allocator.hpp" />
   </ItemGroup>
   <ItemGroup>
