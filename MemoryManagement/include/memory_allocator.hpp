@@ -216,7 +216,6 @@ public:
         first_block_header_ptr->next_free_block = nullptr;
         first_block_header_ptr->prev_free_block = nullptr;
         first_free_block_ptr_ = first_block_header_ptr;
-        last_free_block_ptr_ = first_block_header_ptr;
         occupied_memory_ = 0;
         free_memory_ = get_memory_size(first_block_header_ptr);
 
@@ -247,9 +246,7 @@ public:
         } else {
             ptr->prev_free_block->next_free_block = ptr->next_free_block;
         }
-        if (ptr->next_free_block == nullptr) {
-            last_free_block_ptr_ = ptr->prev_free_block;
-        } else {
+        if (ptr->next_free_block != nullptr) {
             ptr->next_free_block->prev_free_block = ptr->prev_free_block;
         }
         auto block_size = get_block_size(ptr);
@@ -269,9 +266,6 @@ public:
         header_ptr->next_free_block = first_free_block_ptr_;
         header_ptr->prev_free_block = nullptr;
         first_free_block_ptr_ = header_ptr;
-        if (last_free_block_ptr_ == nullptr) {
-            last_free_block_ptr_ = first_free_block_ptr_;
-        }
         try_merge(header_ptr);
     }
 
@@ -307,7 +301,6 @@ public:
         std::cout << "start_bound_pointer_: " << start_bound_pointer_ << std::endl;
         std::cout << "end_bound_pointer_: " << end_bound_pointer_ << std::endl;
         std::cout << "first_free_block_ptr_: " << first_free_block_ptr_ << std::endl;
-        std::cout << "last_free_block_ptr_: " << last_free_block_ptr_ << std::endl;
         std::cout << "occupied_memory_: " << occupied_memory_ << std::endl;
         std::cout << "free_memory_: " << free_memory_ << std::endl;
         std::cout << std::endl;
@@ -392,7 +385,6 @@ private:
     void* start_bound_pointer_{ nullptr };
     void* end_bound_pointer_{ nullptr };
     header* first_free_block_ptr_{ nullptr };
-    header* last_free_block_ptr_{ nullptr };
     size_t free_memory_{ 0 };
     size_t occupied_memory_{ 0 };
 
@@ -407,8 +399,8 @@ private:
         if (diff < sizeof(header) + sizeof(footer)) {
             return;
         }
-        auto* new_footer_ptr = static_cast<footer*>(static_cast<void*>(std::next(static_cast<std::byte*>(static_cast<void*>(&header_ptr->prev_free_block)), size)));
-        auto* new_header_ptr = static_cast<header*>(static_cast<void*>(std::next(new_footer_ptr)));
+        auto* new_footer_ptr = new (std::next(static_cast<std::byte*>(static_cast<void*>(&header_ptr->prev_free_block)), size)) footer;
+        auto* new_header_ptr = new (std::next(new_footer_ptr)) header;
         header_ptr->set_footer(new_footer_ptr);
         footer_ptr->set_header(new_header_ptr);
         new_header_ptr->set_footer(footer_ptr);
@@ -416,9 +408,6 @@ private:
         new_header_ptr->next_free_block = header_ptr->next_free_block;
         new_header_ptr->prev_free_block = header_ptr;
         header_ptr->next_free_block = new_header_ptr;
-        if (new_header_ptr->next_free_block == nullptr) {
-            last_free_block_ptr_ = new_header_ptr;
-        }
         assert(header_ptr == header_ptr->get_footer()->get_header());
         assert(new_header_ptr == new_header_ptr->get_footer()->get_header());
         assert(get_block_size(header_ptr) >= sizeof(header) + sizeof(footer));
@@ -449,9 +438,7 @@ private:
         } else {
             left_header->prev_free_block->next_free_block = left_header->next_free_block;
         }
-        if (left_header->next_free_block == nullptr) {
-            last_free_block_ptr_ = left_header->prev_free_block;
-        } else {
+        if (left_header->next_free_block != nullptr) {
             left_header->next_free_block->prev_free_block = left_header->prev_free_block;
         }
 
@@ -460,9 +447,7 @@ private:
         } else {
             header_ptr->prev_free_block->next_free_block = header_ptr->next_free_block;
         }
-        if (header_ptr->next_free_block == nullptr) {
-            last_free_block_ptr_ = header_ptr->prev_free_block;
-        } else {
+        if (header_ptr->next_free_block != nullptr) {
             header_ptr->next_free_block->prev_free_block = header_ptr->prev_free_block;
         }
 
@@ -474,9 +459,6 @@ private:
         left_header->next_free_block = first_free_block_ptr_;
         left_header->prev_free_block = nullptr;
         first_free_block_ptr_ = left_header;
-        if (last_free_block_ptr_ == nullptr) {
-            last_free_block_ptr_ = first_free_block_ptr_;
-        }
     }
     void try_merge_right(header* left_header) {
         assert(left_header != nullptr);
@@ -505,9 +487,7 @@ private:
         } else {
             left_header->prev_free_block->next_free_block = left_header->next_free_block;
         }
-        if (left_header->next_free_block == nullptr) {
-            last_free_block_ptr_ = left_header->prev_free_block;
-        } else {
+        if (left_header->next_free_block != nullptr) {
             left_header->next_free_block->prev_free_block = left_header->prev_free_block;
         }
 
@@ -516,9 +496,7 @@ private:
         } else {
             header_ptr->prev_free_block->next_free_block = header_ptr->next_free_block;
         }
-        if (header_ptr->next_free_block == nullptr) {
-            last_free_block_ptr_ = header_ptr->prev_free_block;
-        } else {
+        if (header_ptr->next_free_block != nullptr) {
             header_ptr->next_free_block->prev_free_block = header_ptr->prev_free_block;
         }
 
@@ -530,9 +508,6 @@ private:
         left_header->next_free_block = first_free_block_ptr_;
         left_header->prev_free_block = nullptr;
         first_free_block_ptr_ = left_header;
-        if (last_free_block_ptr_ == nullptr) {
-            last_free_block_ptr_ = first_free_block_ptr_;
-        }
     }
     void try_merge(header* header_ptr) {
         try_merge_left(header_ptr);

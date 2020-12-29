@@ -2,14 +2,38 @@
 
 int main() {
     memory::MemoryAllocator ma;
-    memory::CoalesceAllocator<128> ca;
+    memory::CoalesceAllocator<256> ca;
     ca.init();
     ca.dumpBuffer();
     ca.dumpInfo();
     auto* m1 = ca.alloc(16);
+    {
+        auto* p = static_cast<std::byte*>(m1);
+        for (int i = 0; i < 16; ++i) {
+            *p = static_cast<std::byte>(16);
+            p++;
+        }
+    }
     ca.dumpBuffer();
     ca.dumpInfo();
     auto* m2 = ca.alloc(48);
+    {
+        auto* p = static_cast<std::byte*>(m2);
+        for (int i = 0; i < 48; ++i) {
+            *p = static_cast<std::byte>(48);
+            p++;
+        }
+    }
+    ca.dumpBuffer();
+    ca.dumpInfo();
+    auto* m3 = ca.alloc(32);
+    {
+        auto* p = static_cast<std::byte*>(m3);
+        for (int i = 0; i < 32; ++i) {
+            *p = static_cast<std::byte>(32);
+            p++;
+        }
+    }
     ca.dumpBuffer();
     ca.dumpInfo();
 
