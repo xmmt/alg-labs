@@ -49,15 +49,20 @@ public:
         //    static_cast<std::byte*>(static_cast<void*>(&p->storage))[BlockSize - 1] = static_cast<std::byte>(24);
         //}
     }
+
     void destroy() final {
     }
+
     void* alloc(size_t size) final {
-        if (init_blocks_count_ < BlockCount) {
+        if (free_block_ptr_ == nullptr && init_blocks_count_ < BlockCount) {
             auto* new_block_ptr = std::next(static_cast<block*>(start_bound_pointer_), init_blocks_count_);
             new (new_block_ptr) block;
             *static_cast<block**>(static_cast<void*>(&new_block_ptr->storage)) = free_block_ptr_;
             free_block_ptr_ = new_block_ptr;
             init_blocks_count_ += 1;
+        }
+        if (free_block_ptr_ == nullptr) {
+            return nullptr;
         }
         assert(check_free(free_block_ptr_));
         auto* block_ptr = free_block_ptr_;
@@ -65,15 +70,21 @@ public:
 #if _DEBUG
         block_ptr->occupied = true;
 #endif
+        occupied_blocks_count_ += 1;
         return &block_ptr->storage;
     }
+
     void free(void* p) final {
         auto* block_ptr = static_cast<block*>(static_cast<void*>(std::prev(static_cast<std::byte*>(p), offsetof(block, storage))));
         assert(check_occupied(block_ptr));
 #if _DEBUG
         block_ptr->occupied = false;
 #endif
+        occupied_blocks_count_ -= 1;
+        *static_cast<block**>(static_cast<void*>(&block_ptr->storage)) = free_block_ptr_;
+        free_block_ptr_ = block_ptr;
     }
+
 #if _DEBUG
     void dumpStat() const final {
     }
@@ -83,19 +94,32 @@ public:
     void dumpBuffer() const {
         std::cout.setf(std::ios::right, std::ios::adjustfield);
         auto* p = static_cast<uint8_t*>(static_cast<void*>(buffer_.get()));
-        for (int i = 0; i < sizeof(buffer_storage_t); ++i, ++p) {
+        for (int i = 0; i < sizeof(buffer_storage_t); ++i, std::advance(p, 1)) {
             std::cout.width(0);
             std::cout << static_cast<void*>(p);
             std::cout.width(7);
             std::cout << "[" + std::to_string(i) + "]";
             std::cout.width(5);
-            std::cout << static_cast<int>(*p);
+            std::cout << std::hex << static_cast<uint64_t>(*p);
+            std::cout.width(5);
+            std::cout << std::dec << static_cast<uint64_t>(*p);
             if (std::isgraph(*p)) {
                 std::cout.width(5);
                 std::cout << *p;
             }
             std::cout << std::endl;
         }
+    }
+    void dumpInfo() const {
+        std::cout << "BlockSize: " << BlockSize << ", block_size: " << block_size << ", BlockCount: " << BlockCount << std::endl;
+        std::cout << "buffer size: " << sizeof(buffer_storage_t) << std::endl;
+        std::cout << "buffer_: " << buffer_.get() << std::endl;
+        std::cout << "start_bound_pointer_: " << start_bound_pointer_ << std::endl;
+        std::cout << "end_bound_pointer_: " << end_bound_pointer_ << std::endl;
+        std::cout << "free_block_ptr_: " << free_block_ptr_ << std::endl;
+        std::cout << "init_blocks_count_: " << init_blocks_count_ << std::endl;
+        std::cout << "occupied_blocks_count_: " << occupied_blocks_count_ << std::endl;
+        std::cout << std::endl;
     }
 
 private:
@@ -135,20 +159,24 @@ private:
           || std::distance(static_cast<std::byte*>(static_cast<void*>(block_ptr)), static_cast<std::byte*>(end_bound_pointer_)) <= 0) {
             return false;
         }
-        if (reinterpret_cast<uint64_t>(block_ptr) % block_size != 0) {
+        auto t = std::distance(static_cast<std::byte*>(start_bound_pointer_), static_cast<std::byte*>(static_cast<void*>(block_ptr)));
+        if (std::distance(static_cast<std::byte*>(start_bound_pointer_), static_cast<std::byte*>(static_cast<void*>(block_ptr))) % block_size != 0) {
             return false;
         }
         return true;
     }
+
     static bool check_corruption(block* block_ptr) {
         return block_ptr->start_tag == start_tag_value && block_ptr->end_tag == end_tag_value;
     }
+
     bool check_occupied(block* block_ptr) const {
         if (!check_boundary(block_ptr)) {
             return false;
         }
         return block_ptr->occupied;
     }
+
     bool check_free(block* block_ptr) const {
         if (!check_boundary(block_ptr)) {
             return false;
