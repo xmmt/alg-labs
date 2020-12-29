@@ -14,7 +14,7 @@ struct trivially_copyable_struct {
     trivially_copyable_struct(trivially_copyable_struct const&) = default;
     trivially_copyable_struct(trivially_copyable_struct&&) = default;
     trivially_copyable_struct& operator=(trivially_copyable_struct const&) = default;
-    trivially_copyable_struct& operator=(trivially_copyable_struct&&) = delete;
+    trivially_copyable_struct& operator=(trivially_copyable_struct&&) = default;
     ~trivially_copyable_struct() = default; // virtual destructor disables is_trivially_copyable trait
 
     trivially_copyable_struct(T const& n)
