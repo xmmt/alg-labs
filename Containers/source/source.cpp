@@ -166,7 +166,7 @@ int main() {
             x(x const& o) {
                 d = o.d;
             }
-            x(x&& o) {
+            x(x&& o) noexcept {
                 d = o.d;
                 o.d = 0;
             }
@@ -174,7 +174,7 @@ int main() {
                 d = o.d;
                 return *this;
             }
-            x& operator=(x&& o) {
+            x& operator=(x&& o) noexcept {
                 d = o.d;
                 o.d = 0;
                 return *this;
