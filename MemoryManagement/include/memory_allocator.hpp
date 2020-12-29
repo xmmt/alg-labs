@@ -216,15 +216,8 @@ public:
         first_block_header_ptr->next_free_block = nullptr;
         first_block_header_ptr->prev_free_block = nullptr;
         first_free_block_ptr_ = first_block_header_ptr;
-        occupied_memory_ = 0;
         free_memory_ = get_memory_size(first_block_header_ptr);
-
-        //auto* p = static_cast<block*>(static_cast<void*>(buffer_.get()));
-        //for (int i = 0; i < BlockCount; ++i, std::advance(p, 1)) {
-        //    new (p) block;
-        //    static_cast<std::byte*>(static_cast<void*>(&p->storage))[0] = static_cast<std::byte>(i);
-        //    static_cast<std::byte*>(static_cast<void*>(&p->storage))[BlockSize - 1] = static_cast<std::byte>(24);
-        //}
+        occupied_memory_ = get_block_size(first_block_header_ptr) - free_memory_;
     }
 
     void destroy() final {
@@ -249,9 +242,10 @@ public:
         if (ptr->next_free_block != nullptr) {
             ptr->next_free_block->prev_free_block = ptr->prev_free_block;
         }
-        auto block_size = get_block_size(ptr);
-        occupied_memory_ += block_size;
-        free_memory_ -= block_size;
+        auto memory_size = get_memory_size(ptr);
+        occupied_memory_ += memory_size;
+        free_memory_ -= memory_size;
+        allocated_memory_ += memory_size;
         return &ptr->prev_free_block;
     }
 
@@ -260,9 +254,10 @@ public:
         auto* header_ptr = static_cast<header*>(static_cast<void*>(std::prev(static_cast<std::byte*>(p), offsetof(header, prev_free_block))));
         assert(check_occupied(header_ptr));
         header_ptr->set_occupied(false);
-        auto block_size = get_block_size(header_ptr);
-        occupied_memory_ -= block_size;
-        free_memory_ += block_size;
+        auto memory_size = get_memory_size(header_ptr);
+        occupied_memory_ -= memory_size;
+        free_memory_ += memory_size;
+        allocated_memory_ -= memory_size;
         header_ptr->next_free_block = first_free_block_ptr_;
         header_ptr->prev_free_block = nullptr;
         first_free_block_ptr_ = header_ptr;
@@ -303,6 +298,8 @@ public:
         std::cout << "first_free_block_ptr_: " << first_free_block_ptr_ << std::endl;
         std::cout << "occupied_memory_: " << occupied_memory_ << std::endl;
         std::cout << "free_memory_: " << free_memory_ << std::endl;
+        std::cout << "allocated_memry_: " << allocated_memory_ << std::endl;
+        std::cout << "overhead_: " << occupied_memory_ - allocated_memory_ << std::endl;
         std::cout << std::endl;
     }
 
@@ -387,6 +384,7 @@ private:
     header* first_free_block_ptr_{ nullptr };
     size_t free_memory_{ 0 };
     size_t occupied_memory_{ 0 };
+    size_t allocated_memory_{ 0 };
 
 private:
     void try_split(header* header_ptr, size_t size) {
@@ -412,6 +410,8 @@ private:
         assert(new_header_ptr == new_header_ptr->get_footer()->get_header());
         assert(get_block_size(header_ptr) >= sizeof(header) + sizeof(footer));
         assert(get_block_size(new_header_ptr) >= sizeof(header) + sizeof(footer));
+        free_memory_ -= get_service_info_size();
+        occupied_memory_ += get_service_info_size();
     }
     void try_merge_left(header* header_ptr) {
         assert(header_ptr != nullptr);
@@ -429,10 +429,6 @@ private:
             return;
         }
 
-        auto left_block_size = get_block_size(left_header);
-        auto cur_block_size = get_block_size(header_ptr);
-        free_memory_ -= left_block_size + cur_block_size;
-
         if (left_header->prev_free_block == nullptr) {
             first_free_block_ptr_ = left_header->next_free_block;
         } else {
@@ -454,18 +450,19 @@ private:
         left_header->set_footer(header_ptr->get_footer());
         left_header->get_footer()->set_header(left_header);
 
-        auto block_size = get_block_size(left_header);
-        free_memory_ += block_size;
         left_header->next_free_block = first_free_block_ptr_;
         left_header->prev_free_block = nullptr;
         first_free_block_ptr_ = left_header;
+
+        free_memory_ += get_service_info_size();
+        occupied_memory_ -= get_service_info_size();
     }
     void try_merge_right(header* left_header) {
         assert(left_header != nullptr);
         auto* left_footer = left_header->get_footer();
         assert(left_footer != nullptr);
         assert(left_header == left_footer->get_header());
-        auto* header_ptr = std::next(static_cast<header*>(static_cast<void*>(left_footer)));
+        auto* header_ptr = static_cast<header*>(static_cast<void*>(std::next(left_footer)));
         if (std::distance(static_cast<std::byte*>(static_cast<void*>(header_ptr)), static_cast<std::byte*>(end_bound_pointer_)) < sizeof(header) + sizeof(footer)) {
             return;
         }
@@ -478,10 +475,6 @@ private:
             return;
         }
 
-        auto left_block_size = get_block_size(left_header);
-        auto cur_block_size = get_block_size(header_ptr);
-        free_memory_ -= left_block_size + cur_block_size;
-
         if (left_header->prev_free_block == nullptr) {
             first_free_block_ptr_ = left_header->next_free_block;
         } else {
@@ -503,15 +496,16 @@ private:
         left_header->set_footer(header_ptr->get_footer());
         left_header->get_footer()->set_header(left_header);
 
-        auto block_size = get_block_size(left_header);
-        free_memory_ += block_size;
         left_header->next_free_block = first_free_block_ptr_;
         left_header->prev_free_block = nullptr;
         first_free_block_ptr_ = left_header;
+
+        free_memory_ += get_service_info_size();
+        occupied_memory_ -= get_service_info_size();
     }
     void try_merge(header* header_ptr) {
-        try_merge_left(header_ptr);
         try_merge_right(header_ptr);
+        try_merge_left(header_ptr);
     }
     static size_t get_memory_size(header* header_ptr) {
         assert(header_ptr != nullptr);
@@ -526,6 +520,9 @@ private:
         assert(header_ptr->get_footer() != nullptr);
         assert(header_ptr == header_ptr->get_footer()->get_header());
         return std::distance(static_cast<std::byte*>(static_cast<void*>(header_ptr)), static_cast<std::byte*>(static_cast<void*>(std::next(header_ptr->get_footer()))));
+    }
+    static constexpr size_t get_service_info_size() {
+        return offsetof(header, prev_free_block) + sizeof(footer);
     }
     //static bool get_occupied(void* ptr) {
     //    assert(ptr != nullptr);

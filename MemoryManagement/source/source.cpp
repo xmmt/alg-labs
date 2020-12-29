@@ -2,40 +2,136 @@
 
 int main() {
     memory::MemoryAllocator ma;
-    memory::CoalesceAllocator<256> ca;
-    ca.init();
-    ca.dumpBuffer();
-    ca.dumpInfo();
-    auto* m1 = ca.alloc(16);
-    {
-        auto* p = static_cast<std::byte*>(m1);
-        for (int i = 0; i < 16; ++i) {
-            *p = static_cast<std::byte>(16);
-            p++;
+   // memory::CoalesceAllocator<256> ca;
+   // ca.init();
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m1 = ca.alloc(16);
+   // {
+   //     auto* p = static_cast<std::byte*>(m1);
+   //     for (int i = 0; i < 16; ++i) {
+   //         *p = static_cast<std::byte>(16);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m2 = ca.alloc(48);
+   // {
+   //     auto* p = static_cast<std::byte*>(m2);
+   //     for (int i = 0; i < 48; ++i) {
+   //         *p = static_cast<std::byte>(48);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m3 = ca.alloc(32);
+   // {
+   //     auto* p = static_cast<std::byte*>(m3);
+   //     for (int i = 0; i < 32; ++i) {
+   //         *p = static_cast<std::byte>(32);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m4 = ca.alloc(64);
+   // {
+   //     auto* p = static_cast<std::byte*>(m4);
+   //     for (int i = 0; i < 64; ++i) {
+   //         *p = static_cast<std::byte>(64);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m6 = ca.alloc(16);
+   // {
+   //     auto* p = static_cast<std::byte*>(m6);
+   //     for (int i = 0; i < 17; ++i) {
+   //         *p = static_cast<std::byte>(17);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // ca.free(m2);
+   // ca.free(m1);
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // auto* m5 = ca.alloc(56);
+   // {
+   //     auto* p = static_cast<std::byte*>(m5);
+   //     for (int i = 0; i < 56; ++i) {
+   //         *p = static_cast<std::byte>(56);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+   // ca.free(m5);
+   // auto* m7 = ca.alloc(32);
+   // {
+   //     auto* p = static_cast<std::byte*>(m7);
+   //     for (int i = 0; i < 31; ++i) {
+   //         *p = static_cast<std::byte>(31);
+   //         p++;
+   //     }
+   // }
+   // auto* m8 = ca.alloc(32);
+   // {
+   //     auto* p = static_cast<std::byte*>(m8);
+   //     for (int i = 0; i < 33; ++i) {
+   //         *p = static_cast<std::byte>(33);
+   //         p++;
+   //     }
+   // }
+   // ca.dumpBuffer();
+   // ca.dumpInfo();
+
+    memory::CoalesceAllocator<512> ca2;
+    ca2.init();
+    for (int i = 0; i < 500; ++i) {
+        {
+            ca2.dumpInfo();
+            auto* b1 = ca2.alloc(24);
+            ca2.dumpInfo();
+            auto* b2 = ca2.alloc(72);
+            ca2.dumpInfo();
+            auto* b3 = ca2.alloc(160);
+            ca2.dumpInfo();
+            auto* b4 = ca2.alloc(144);
+            ca2.dumpInfo();
+            auto* b5 = ca2.alloc(16);
+            ca2.dumpInfo();
+            ca2.free(b3);
+            ca2.free(b1);
+            ca2.free(b4);
+            ca2.free(b2);
+            ca2.free(b5);
+            ca2.dumpInfo();
+        }
+        {
+            ca2.dumpInfo();
+            auto* b1 = ca2.alloc(32);
+            ca2.dumpInfo();
+            auto* b2 = ca2.alloc(200);
+            ca2.dumpInfo();
+            auto* b3 = ca2.alloc(64);
+            ca2.dumpInfo();
+            auto* b4 = ca2.alloc(104);
+            ca2.dumpInfo();
+            auto* b5 = ca2.alloc(16);
+            ca2.dumpInfo();
+            ca2.free(b5);
+            ca2.free(b4);
+            ca2.free(b2);
+            ca2.free(b3);
+            ca2.free(b1);
+            ca2.dumpInfo();
         }
     }
-    ca.dumpBuffer();
-    ca.dumpInfo();
-    auto* m2 = ca.alloc(48);
-    {
-        auto* p = static_cast<std::byte*>(m2);
-        for (int i = 0; i < 48; ++i) {
-            *p = static_cast<std::byte>(48);
-            p++;
-        }
-    }
-    ca.dumpBuffer();
-    ca.dumpInfo();
-    auto* m3 = ca.alloc(32);
-    {
-        auto* p = static_cast<std::byte*>(m3);
-        for (int i = 0; i < 32; ++i) {
-            *p = static_cast<std::byte>(32);
-            p++;
-        }
-    }
-    ca.dumpBuffer();
-    ca.dumpInfo();
 
     //memory::FixedSizeAllocator<8, 6> fsa;
     //fsa.init();
