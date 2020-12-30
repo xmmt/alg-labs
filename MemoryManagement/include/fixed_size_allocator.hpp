@@ -2,6 +2,8 @@
 
 #include "allocator_interface.hpp"
 
+#include <Windows.h>
+
 #include <cassert>
 #include <memory>
 #include <iostream>
@@ -23,7 +25,9 @@ public:
     }
 
     void init() final {
-        buffer_ = std::make_unique<buffer_storage_t>();
+        //buffer_ = std::make_unique<buffer_storage_t>();
+        buffer_.reset(static_cast<buffer_storage_t*>(VirtualAlloc(nullptr, sizeof(buffer_storage_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)));
+        assert(buffer_.get() != nullptr);
         start_bound_pointer_ = static_cast<void*>(buffer_.get());
         end_bound_pointer_ = static_cast<void*>(std::next(buffer_.get()));
         auto* first_block_ptr = new (start_bound_pointer_) block;
@@ -31,6 +35,10 @@ public:
         init_blocks_count_ = 1;
         free_block_ptr_ = first_block_ptr;
         destroyed_ = false;
+    }
+
+    bool is_init() final {
+        return !destroyed_;
     }
 
     void destroy() final {
@@ -145,8 +153,13 @@ private:
     static constexpr auto block_size = sizeof(block);
 
     // buffer storage
+    struct deleter {
+        void operator()(void* p) const {
+            VirtualFree(p, 0, MEM_RELEASE);
+        }
+    };
     using buffer_storage_t = std::aligned_storage_t<BlockCount * sizeof(block), alignof(block)>;
-    std::unique_ptr<buffer_storage_t> buffer_{ nullptr };
+    std::unique_ptr<buffer_storage_t, deleter> buffer_{ nullptr };
     void* start_bound_pointer_{ nullptr };
     void* end_bound_pointer_{ nullptr };
     block* free_block_ptr_{ nullptr };

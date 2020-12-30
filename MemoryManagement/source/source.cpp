@@ -4,6 +4,7 @@
 #include <chrono>
 
 int main() {
+    /*
     memory::CoalesceAllocator<512> ca;
     ca.init();
     ca.dumpBuffer();
@@ -206,14 +207,25 @@ int main() {
     fsa.destroy();
     ca.destroy();
     ca2.destroy();
-
+    */
     auto start_point = std::chrono::steady_clock::now();
     {
         memory::MemoryAllocator ma;
         ma.init();
-        for (int j = 0; j < 5; ++j) {
+        for (int j = 0; j < 2; ++j) {
             std::vector<void*> z;
-            for (int i = 0; i < 10000; ++i) {
+            for (int i = 0; i < 1000000; ++i) {
+                z.push_back(ma.alloc(8));
+                z.push_back(ma.alloc(12));
+                z.push_back(ma.alloc(16));
+                z.push_back(ma.alloc(20));
+                z.push_back(ma.alloc(24));
+                z.push_back(ma.alloc(32));
+                z.push_back(ma.alloc(48));
+                z.push_back(ma.alloc(60));
+                z.push_back(ma.alloc(64));
+                z.push_back(ma.alloc(72));
+                z.push_back(ma.alloc(73));
                 z.push_back(ma.alloc(8));
                 z.push_back(ma.alloc(12));
                 z.push_back(ma.alloc(16));
@@ -240,20 +252,20 @@ int main() {
                 z.push_back(ma.alloc(523));
                 z.push_back(ma.alloc(600));
                 z.push_back(ma.alloc(700));
-                z.push_back(ma.alloc(800));
-                z.push_back(ma.alloc(900));
-                z.push_back(ma.alloc(1000));
-                z.push_back(ma.alloc(100000));
-                z.push_back(ma.alloc(200000));
-                z.push_back(ma.alloc(300300));
-                z.push_back(ma.alloc(2000000));
-                z.push_back(ma.alloc(3000000));
-                z.push_back(ma.alloc(1000000));
-                z.push_back(ma.alloc(400401));
-                z.push_back(ma.alloc(2002000));
-                z.push_back(ma.alloc(500555));
-                z.push_back(ma.alloc(6006006));
-                z.push_back(ma.alloc(777777));
+                //z.push_back(ma.alloc(800));
+                //z.push_back(ma.alloc(900));
+                //z.push_back(ma.alloc(1000));
+                //z.push_back(ma.alloc(100000));
+                //z.push_back(ma.alloc(200000));
+                //z.push_back(ma.alloc(300300));
+                //z.push_back(ma.alloc(2000000));
+                //z.push_back(ma.alloc(3000000));
+                //z.push_back(ma.alloc(1000000));
+                //z.push_back(ma.alloc(400401));
+                //z.push_back(ma.alloc(2002000));
+                //z.push_back(ma.alloc(500555));
+                //z.push_back(ma.alloc(6006006));
+                //z.push_back(ma.alloc(777777));
             }
             for (auto* p : z) {
                 ma.free(p);

@@ -6,6 +6,7 @@ class AllocatorInterface {
 public:
     virtual ~AllocatorInterface() = 0;
     virtual void init() = 0;
+    virtual bool is_init() = 0;
     virtual void destroy() = 0;
     virtual void* alloc(size_t) = 0;
     virtual void free(void*) = 0;
