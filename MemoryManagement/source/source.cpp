@@ -91,6 +91,12 @@ int main() {
     }
     ca.dumpBuffer();
     ca.dumpInfo();
+    ca.free(m3);
+    ca.free(m4);
+    //ca.free(m5);
+    ca.free(m6);
+    ca.free(m7);
+    ca.free(m8);
 
     memory::CoalesceAllocator<1024> ca2;
     ca2.init();
@@ -135,7 +141,7 @@ int main() {
         }
     }
 
-    memory::FixedSizeAllocator<8, 6> fsa;
+    memory::FixedSizeAllocator<8, 60> fsa;
     fsa.init();
     fsa.dumpInfo();
     fsa.dumpBuffer();
@@ -167,7 +173,7 @@ int main() {
     fsa.dumpInfo();
     auto* p11 = fsa.alloc(1);
     fsa.dumpInfo();
-    fsa.free(p5);
+    fsa.free(p6);
     fsa.dumpInfo();
     auto* p12 = fsa.alloc(1);
     fsa.dumpInfo();
@@ -181,11 +187,31 @@ int main() {
     fsa.dumpInfo();
     fsa.dumpBuffer();
 
+    //fsa.free(p1);
+    //fsa.free(p2);
+    fsa.free(p3);
+    fsa.free(p4);
+    //fsa.free(p5);
+    //fsa.free(p6);
+    fsa.free(p7);
+    fsa.free(p8);
+    fsa.free(p9);
+    fsa.free(p10);
+    fsa.free(p11);
+    //fsa.free(p12);
+    fsa.free(p13);
+    fsa.free(p14);
+    fsa.free(p15);
+
+    fsa.destroy();
+    ca.destroy();
+    ca2.destroy();
+
     auto start_point = std::chrono::steady_clock::now();
     {
         memory::MemoryAllocator ma;
         ma.init();
-        for (int j = 0; j < 500; ++j) {
+        for (int j = 0; j < 5; ++j) {
             std::vector<void*> z;
             for (int i = 0; i < 10000; ++i) {
                 z.push_back(ma.alloc(8));
@@ -234,9 +260,11 @@ int main() {
             }
             z.clear();
         }
+        ma.destroy();
     }
     std::cout << std::endl
               << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_point).count()
               << std::endl;
+
     return 0;
 }

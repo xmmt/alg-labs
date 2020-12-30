@@ -19,6 +19,7 @@ public:
     CoalesceAllocator& operator=(CoalesceAllocator const&) = delete;
     CoalesceAllocator& operator=(CoalesceAllocator&&) = default;
     ~CoalesceAllocator() final {
+        assert(destroyed_);
     }
 
     void init() final {
@@ -35,9 +36,19 @@ public:
         first_free_block_ptr_ = first_block_header_ptr;
         free_memory_ = get_memory_size(first_block_header_ptr);
         occupied_memory_ = get_block_size(first_block_header_ptr) - free_memory_;
+        destroyed_ = false;
     }
 
     void destroy() final {
+        assert(allocated_memory_ == 0);
+        buffer_.reset(nullptr);
+        start_bound_pointer_ = nullptr;
+        end_bound_pointer_ = nullptr;
+        first_free_block_ptr_ = nullptr;
+        free_memory_ = 0;
+        occupied_memory_ = 0;
+        allocated_memory_ = 0;
+        destroyed_ = true;
     }
 
     void* alloc(size_t size) final {
@@ -210,6 +221,7 @@ private:
     size_t free_memory_{ 0 };
     size_t occupied_memory_{ 0 };
     size_t allocated_memory_{ 0 };
+    bool destroyed_{ true };
 
 private:
     void try_split(header* header_ptr, size_t size) {

@@ -110,6 +110,7 @@ struct y {
         int a = 3;
     }
     auto operator<=>(y const&) const = default;
+    int s[50];
 };
 
 namespace std {
@@ -377,6 +378,13 @@ int main() {
         int a = 3;
     }
     //std::this_thread::sleep_for(std::chrono::seconds(4));
-    
+    {
+        containers::List<int> ch;
+        for (int i = 0; i < 50; ++i)
+        {
+            ch.insertTail(i);
+        }
+        int x = 2;
+    }
     return 0;
 }

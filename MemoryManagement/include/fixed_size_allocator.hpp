@@ -19,6 +19,7 @@ public:
     FixedSizeAllocator& operator=(FixedSizeAllocator const&) = delete;
     FixedSizeAllocator& operator=(FixedSizeAllocator&&) = default;
     ~FixedSizeAllocator() final {
+        assert(destroyed_);
     }
 
     void init() final {
@@ -29,9 +30,18 @@ public:
         *static_cast<block**>(static_cast<void*>(&first_block_ptr->storage)) = nullptr;
         init_blocks_count_ = 1;
         free_block_ptr_ = first_block_ptr;
+        destroyed_ = false;
     }
 
     void destroy() final {
+        assert(occupied_blocks_count_ == 0);
+        buffer_.reset(nullptr);
+        start_bound_pointer_ = nullptr;
+        end_bound_pointer_ = nullptr;
+        free_block_ptr_ = nullptr;
+        init_blocks_count_ = 0;
+        occupied_blocks_count_ = 0;
+        destroyed_ = true;
     }
 
     void* alloc(size_t size) final {
@@ -142,6 +152,7 @@ private:
     block* free_block_ptr_{ nullptr };
     size_t init_blocks_count_{ 0 };
     size_t occupied_blocks_count_{ 0 };
+    bool destroyed_{ true };
 
 private:
     bool check_boundary(block* block_ptr) const {

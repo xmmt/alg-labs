@@ -1,7 +1,7 @@
 #include "pch.h"
 
 namespace quick_sort::impl {
-size_t k_insertion_threshold{ 4 };
+size_t k_insertion_threshold{ 15 };
 } // namespace quick_sort::impl
 
 TEST(TestCaseName, TestName) {
@@ -365,4 +365,22 @@ TEST(Quick_Sort, Similar_1) {
     quick_sort::impl::k_insertion_threshold = 0;
     quick_sort::sort(v.begin(), v.end());
     std::cout << helpers::serialize_array(v.begin(), v.end()) << std::endl;
+}
+
+TEST(Quick_Sort, LargeArray) {
+    size_t const len = 100'000'000;
+    std::vector<int> v;
+    v.reserve(len);
+    for (int i = 0; i < len / 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            v.emplace_back(i);
+        }
+    }
+    random_shuffle(v.begin(), v.end());
+    quick_sort::impl::k_insertion_threshold = 25;
+    quick_sort::sort(v.begin(), v.end());
+    ASSERT_TRUE(is_sorted(v.begin(), v.end()));
+    for (int i = 0; i < 100; ++i) {
+        std::cout << v[i] << ' ';
+    }
 }

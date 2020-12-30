@@ -309,7 +309,7 @@ public:
         void insert(size_type idx, ValueType const& value) {
             if (size_ == k_chunk_size)
                 [[unlikely]] {
-                    next_ = new Chunk{ this, next_.release() };
+                    next_ = std::make_unique<Chunk>(list_, this, next_.release());
                     if (!next_->next_) {
                         list_.tail_chunk_ = next_.get();
                     }

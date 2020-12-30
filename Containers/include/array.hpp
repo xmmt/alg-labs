@@ -206,6 +206,14 @@ public:
         new (std::next(data_.get(), size_)) ValueType(value);
         ++size_;
     }
+    void insert(ValueType&& value) {
+        if (size_ >= capacity_)
+            [[unlikely]] {
+                increase_capacity();
+            }
+        new (std::next(data_.get(), size_)) ValueType(std::move(value));
+        ++size_;
+    }
     void insert(size_type index, ValueType const& value) {
         assert(index <= size_ && "Array::insert const failed: out of range");
         if (size_ >= capacity_)
@@ -218,6 +226,20 @@ public:
           to_pointer(std::next(data_.get(), size_)),
           to_pointer(std::next(data_.get(), size_ + 1)));
         new (it) ValueType(value);
+        ++size_;
+    }
+    void insert(size_type index, ValueType&& value) {
+        assert(index <= size_ && "Array::insert const failed: out of range");
+        if (size_ >= capacity_)
+            [[unlikely]] {
+                increase_capacity();
+            }
+        auto* it = std::next(data_.get(), index);
+        std::move_backward(
+          to_pointer(it),
+          to_pointer(std::next(data_.get(), size_)),
+          to_pointer(std::next(data_.get(), size_ + 1)));
+        new (it) ValueType(std::move(value));
         ++size_;
     }
     void remove(size_type index) {

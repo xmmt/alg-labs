@@ -10,7 +10,7 @@ namespace impl {
 extern size_t k_insertion_threshold;
 #else
 // TODO: determine best size for insertion sort
-constexpr size_t k_insertion_threshold{ 0 };
+constexpr size_t k_insertion_threshold{ 15 };
 #endif
 
 //template <typename T, typename Compare>

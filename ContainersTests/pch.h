@@ -6,5 +6,7 @@
 #pragma once
 
 #include "array.hpp"
+#include "dictionary.hpp"
+#include "helpers.hpp"
 
 #include "gtest/gtest.h"

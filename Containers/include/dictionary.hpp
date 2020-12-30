@@ -461,7 +461,7 @@ public:
     ValueType& operator[](KeyType const& key) {
         if (!root) {
             put(key, {});
-            return *root;
+            return root->value;
         }
         auto h = hash(key);
         auto s = root->lookup(key, h);
