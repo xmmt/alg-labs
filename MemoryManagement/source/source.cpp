@@ -4,7 +4,7 @@
 #include <chrono>
 
 int main() {
-    /*
+    
     memory::CoalesceAllocator<512> ca;
     ca.init();
     ca.dumpBuffer();
@@ -207,7 +207,7 @@ int main() {
     fsa.destroy();
     ca.destroy();
     ca2.destroy();
-    */
+    
     auto start_point = std::chrono::steady_clock::now();
     {
         memory::MemoryAllocator ma;
